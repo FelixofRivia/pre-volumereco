@@ -11,14 +11,23 @@ sys.path.append('../tools_new/analysis')
 from edepsim_deposits import EdepSimDeposits
 
 
-def get_response_data(event: int) -> np.ndarray:
+def get_response_data(event) -> np.ndarray:
   assert len(event.items())==60, "Number of cameras is not 60"
-  cameras = np.empty((60, 32, 32, 2), dtype=np.float32)
+  cameras = np.empty((60,), dtype=np.float32)
   for i, (cam, img) in enumerate(event.items()):
     #print("cam :", cam)
     #print("pixel shape:", np.array(img.pixels, np.float32).shape)
-    assert np.array(img.pixels, np.float32).shape == (32,32,2), "Camera shape is not (32,32,2)"  
-    cameras[i] = np.array(img.pixels, np.float32)
+    assert np.array(img.pixels, np.float32).shape == (32,32,2), "Camera shape is not (32,32,2)" 
+    times = np.array(img.pixels, np.float32)[:,:,1]
+    non_zero_values = times[times != 0]
+
+    if non_zero_values.size > 0:
+        non_zero_mean = non_zero_values.mean()
+    else:
+        non_zero_mean = 0.0 
+        print("Camera ", cam, "without signal")
+
+    cameras[i] = non_zero_mean
   return cameras
 
 def get_truth_data(edepFile: str, geom: Geometry, event: int) -> np.ndarray:
@@ -37,6 +46,7 @@ if __name__ == "__main__":
 
   response_base_path = Path('/home/filippo/DUNE/data/numu-CC-QE/detector_response')
   drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
+  #drdf_files = ["/home/filippo/DUNE/data/numu-CC-QE/detector_response/response33.drdf"]
 
   print(drdf_files)
 
@@ -59,6 +69,6 @@ if __name__ == "__main__":
   print("truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
 
   # Save to HDF5 file
-  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/dataset.h5', 'w') as f:
+  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/lightweight_dataset.h5', 'w') as f:
     f.create_dataset('inputs', data=events_data, compression='gzip')
     f.create_dataset('targets', data=truths_data, compression='gzip')
