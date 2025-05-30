@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
   edepFile = "/home/filippo/DUNE/data/numu-CC-QE/skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
   defs = {}
-  defs['voxel_size'] = 150
+  defs['voxel_size'] = 200
   geometryPath = "/home/filippo/DUNE/GEOMETRIES/GRAIN_official"        #path to GRAIN geometry
   geom = load_geometry(geometryPath, defs)
 
@@ -69,6 +69,6 @@ if __name__ == "__main__":
   print("truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
 
   # Save to HDF5 file
-  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/lightweight_dataset_15cm.h5', 'w') as f:
+  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/lightweight_dataset_20cm.h5', 'w') as f:
     f.create_dataset('inputs', data=events_data, compression='gzip')
     f.create_dataset('targets', data=truths_data, compression='gzip')
