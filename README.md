@@ -7,6 +7,14 @@ An innovative cryogenic light readout system for GRAIN consists in a matrix of S
 
 https://github.com/user-attachments/assets/22fd6985-2855-4186-83be-e50822842c8a
 
-### Goal of pre-volumereco
+## Goal of pre-volumereco
 The goal of this project is to give an initial rough estimate of the expected 3D energy deposit, to be used as a starting point for the Maximum Likelihood Expectation-Maximization algorithm (instead of starting with a flat distribution). This is expected to make the algorithm converge faster, saving (GPU) time.
+
+### Project structure
+- <code>prepare_input_data.py</code> converts output data from GRAIN MC simulations into a ML-friendly data format (numpy arrays saved as <code>.h5</code> file).
+- <code>data/lightweight_dataset_20cm.h5</code> is a ML-ready dataset provided as an example.
+- <code>train.ipynb</code> is a notebook used to explore input data, train a deep neural network optimizing hyperparameters with [OPTUNA](https://optuna.org), save the model and show some predictions.
+- <code>saved_models/pre_volumereco_optuna_20cm.keras</code> is an already trained model that can be used as an example, skipping the training step.
+
+### Dependencies
 
