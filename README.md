@@ -15,6 +15,3 @@ The goal of this project is to give an initial rough estimate of the expected 3D
 - <code>data/lightweight_dataset_20cm.h5</code> is a ML-ready dataset provided as an example.
 - <code>train.ipynb</code> is a notebook used to explore input data, train a deep neural network optimizing hyperparameters with [OPTUNA](https://optuna.org), save the model and show some predictions.
 - <code>saved_models/pre_volumereco_optuna_20cm.keras</code> is an already trained model that can be used as an example, skipping the training step.
-
-### Dependencies
-
