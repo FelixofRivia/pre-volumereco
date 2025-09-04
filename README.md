@@ -29,4 +29,8 @@ The event features are the average hit times in each one of camera, the event th
 
 
 ### Model evaluation
-Compare reconstructions starting from a flat voxel score distribution and starting from the initial prediction of the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 95% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the initial prediction of the model lowers the number of iterations required.
+Compare reconstructions starting from a flat voxel score distribution and starting from the initial prediction of the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 99% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the initial prediction of the model lowers the number of iterations required.
+
+<p align="center">
+  <img width="567" height="455" alt="likelihood" src="https://github.com/user-attachments/assets/da34aca9-52e9-4e90-b79a-9282ec36ae1f" />
+</p>
