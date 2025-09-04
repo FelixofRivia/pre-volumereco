@@ -3,11 +3,11 @@ import drdf
 import h5py
 from pathlib import Path
 import sys
-sys.path.append('../tools_new/display')
+sys.path.append('../tools/display')
 from read_mctruth import loadPrimariesEdepSim
 from geom_import import load_geometry
 from geometry import Geometry
-sys.path.append('../tools_new/analysis')
+sys.path.append('../tools/analysis')
 from edepsim_deposits import EdepSimDeposits
 
 
@@ -46,9 +46,6 @@ if __name__ == "__main__":
 
   response_base_path = Path('/home/filippo/DUNE/data/numu-CC-QE/detector_response')
   drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
-  #drdf_files = ["/home/filippo/DUNE/data/numu-CC-QE/detector_response/response33.drdf"]
-
-  print(drdf_files)
 
   events = []
   truths = []
