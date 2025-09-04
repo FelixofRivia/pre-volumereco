@@ -10,7 +10,9 @@ DUNE is a next-generation long-baseline neutrino experiment aiming to determine 
 ### 3D imaging with scintillation light
 An innovative cryogenic light readout system for GRAIN consists in a matrix of SiPMs with the optic realized on coded aperture masks (a grid of alternating opaque material and holes). The reconstruction algorithm, based on Maximum Likelihood Expectation-Maximization, combines the views of 60 cameras providing a three-dimensional map of the energy deposited by charged particles. This iterative approach represents a significant computational challenge because it requires optimized use on a computing system with multiple GPUs.
 
-https://github.com/user-attachments/assets/22fd6985-2855-4186-83be-e50822842c8a
+<p align="center">
+  <img width="35%" height="35%" src="https://github.com/user-attachments/assets/a307cbaf-3ee5-4632-a768-266bebba43c9" alt="animated_mutrack" />
+</p>
 
 ## Goal of pre-volumereco
 The goal of this project is to give an initial rough estimate of the expected 3D energy deposit, to be used as a starting point for the Maximum Likelihood Expectation-Maximization algorithm (instead of starting with a flat distribution). This is expected to make the algorithm converge faster, saving (GPU) time.
@@ -32,5 +34,5 @@ The event features are the average hit times in each one of camera, the event th
 Compare reconstructions starting from a flat voxel score distribution and starting from the initial prediction of the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 99% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the initial prediction of the model lowers the number of iterations required.
 
 <p align="center">
-  <img width="567" height="455" alt="likelihood" src="https://github.com/user-attachments/assets/da34aca9-52e9-4e90-b79a-9282ec36ae1f" />
+  <img width="45%" height="45%" alt="likelihood" src="https://github.com/user-attachments/assets/da34aca9-52e9-4e90-b79a-9282ec36ae1f" />
 </p>
