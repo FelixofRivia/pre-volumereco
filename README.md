@@ -15,7 +15,7 @@ An innovative cryogenic light readout system for GRAIN consists in a matrix of S
 </p>
 
 ## Goal of pre-volumereco
-The goal of this project is to give an initial rough estimate of the expected 3D energy deposit, to be used as a starting point for the Maximum Likelihood Expectation-Maximization algorithm (instead of starting with a flat distribution). This is expected to make the algorithm converge faster, saving (GPU) time.
+The goal of this project is to provide a prior of the expected three-dimensional energy deposition to serve as a seed for the MLEM algorithm, rather than a uniform distribution. This improves convergence and reduces GPU load.
 
 ### Project structure
 - <code>prepare_input_data.py</code> converts output data from GRAIN Monte Carlo simulations into a ML-friendly data format (numpy arrays saved as <code>.h5</code> file). Modules from [sand-optical](https://baltig.infn.it/dune/sand-optical/tools) are used to read Monte Carlo data.
@@ -31,7 +31,7 @@ The event features are the average hit times in each one of camera, the event th
 
 
 ### Model evaluation
-Compare reconstructions starting from a flat voxel score distribution and starting from the initial prediction of the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 99% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the initial prediction of the model lowers the number of iterations required.
+Compare reconstructions starting from a uniform voxel score distribution with reconstructions using a prior predicted by the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 99% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the prior predicted by the model lowers the number of iterations required.
 
 <p align="center">
   <img width="45%" height="45%" alt="likelihood" src="https://github.com/user-attachments/assets/da34aca9-52e9-4e90-b79a-9282ec36ae1f" />
