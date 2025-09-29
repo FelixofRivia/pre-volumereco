@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 import ROOT
 sys.path.append('../tools/display')
-from read_mctruth import loadPrimariesEdepSim
+from read_mctruth import loadPrimariesEdepSimAll
 from geom_import import load_geometry
 from geometry import Geometry
 sys.path.append('../tools/analysis')
@@ -31,9 +31,14 @@ def get_response_data(event) -> np.ndarray:
     cameras[i] = non_zero_mean
   return cameras
 
-def get_truth_data(edepFile: str, geom: Geometry, event: int) -> np.ndarray:
-  MCtruth = loadPrimariesEdepSim(edepFile, event)
-  s = EdepSimDeposits(MCtruth, geom)
+# def get_truth_data(edepFile: str, geom: Geometry, event: int) -> np.ndarray:
+#   MCtruth = loadPrimariesEdepSim(edepFile, event)
+#   s = EdepSimDeposits(MCtruth, geom)
+#   s.voxelize()
+#   return s.voxels.voxels
+
+def get_truth_data_fast(truths_dict: dict, geom: Geometry, event: int) -> np.ndarray:
+  s = EdepSimDeposits(truths_dict[event], geom)
   s.voxelize()
   return s.voxels.voxels
 
@@ -47,22 +52,21 @@ if __name__ == "__main__":
   geom = load_geometry(geometryPath, defs)
 
   response_base_path = Path('/home/filippo/DUNE/data/numu-CC-QE/detector_response')
-  drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
+  # drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
+  drdf_files = ["response28.drdf"]
 
   ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
   events = []
   truths = []
+  truths_dict = loadPrimariesEdepSimAll(edepFile_new)
   for file in drdf_files:
     reader = drdf.DRDF()
     reader.read(response_base_path / file)
     for run in reader.runs:
       for event in reader.runs[run]:
-        if event<1800:
-          truth = get_truth_data(edepFile_old, geom, event)
-        else:
-          truth = get_truth_data(edepFile_new, geom, event)
         cameras = get_response_data(reader.runs[run][event])
+        truth = get_truth_data_fast(truths_dict, geom, event)
         events.append(cameras)
         truths.append(truth)
   
@@ -72,6 +76,7 @@ if __name__ == "__main__":
   print("truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
 
   # Save to HDF5 file
-  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/complete_dataset_15cm.h5', 'w') as f:
+  # with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/complete_dataset_15cm.h5', 'w') as f:
+  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/test_15cm.h5', 'w') as f:
     f.create_dataset('inputs', data=events_data, compression='gzip')
     f.create_dataset('targets', data=truths_data, compression='gzip')
