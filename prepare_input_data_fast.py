@@ -31,12 +31,6 @@ def get_response_data(event) -> np.ndarray:
     cameras[i] = non_zero_mean
   return cameras
 
-# def get_truth_data(edepFile: str, geom: Geometry, event: int) -> np.ndarray:
-#   MCtruth = loadPrimariesEdepSim(edepFile, event)
-#   s = EdepSimDeposits(MCtruth, geom)
-#   s.voxelize()
-#   return s.voxels.voxels
-
 def get_truth_data_fast(truths_dict: dict, geom: Geometry, event: int) -> np.ndarray:
   s = EdepSimDeposits(truths_dict[event], geom)
   s.voxelize()
@@ -44,16 +38,16 @@ def get_truth_data_fast(truths_dict: dict, geom: Geometry, event: int) -> np.nda
 
 if __name__ == "__main__":
 
-  edepFile_new = "/home/filippo/DUNE/data/numu-CC-QE/skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
+  edepFile_new = "/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-OPTICALSIM-PROD/GRAIN/TDR_numuCCQES/edepsim/new-skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
   edepFile_old = "/home/filippo/DUNE/data/numu-CC-QE/OLD_skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
   defs = {}
   defs['voxel_size'] = 150
-  geometryPath = "/home/filippo/DUNE/GEOMETRIES/GRAIN_official"        #path to GRAIN geometry
+  geometryPath = "/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-GDML/MASK/GRAIN_box31_3cm_random_2row"        #path to GRAIN geometry
   geom = load_geometry(geometryPath, defs)
 
-  response_base_path = Path('/home/filippo/DUNE/data/numu-CC-QE/detector_response')
+  response_base_path = Path('/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-OPTICALSIM-PROD/GRAIN/TDR_numuCCQES/detresponse')
   # drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
-  drdf_files = ["response28.drdf"]
+  drdf_files = ["response28.drdf", "response29.drdf"]
 
   ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
@@ -76,7 +70,6 @@ if __name__ == "__main__":
   print("truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
 
   # Save to HDF5 file
-  # with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/complete_dataset_15cm.h5', 'w') as f:
-  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/test_15cm.h5', 'w') as f:
+  with h5py.File('/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-EDEPSIM-PROD/new-numu-CC-QE-in-GRAIN/grain_numu_ccqe/pre-volumereco-data/test_15cm.h5', 'w') as f:
     f.create_dataset('inputs', data=events_data, compression='gzip')
     f.create_dataset('targets', data=truths_data, compression='gzip')
