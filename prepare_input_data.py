@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 import ROOT
 sys.path.append('../tools/display')
-from read_mctruth import loadPrimariesEdepSim
+from read_mctruth import loadPrimariesEdepSimAll
 from geom_import import load_geometry
 from geometry import Geometry
 sys.path.append('../tools/analysis')
@@ -31,47 +31,48 @@ def get_response_data(event) -> np.ndarray:
     cameras[i] = non_zero_mean
   return cameras
 
-def get_truth_data(edepFile: str, geom: Geometry, event: int) -> np.ndarray:
-  MCtruth = loadPrimariesEdepSim(edepFile, event)
-  s = EdepSimDeposits(MCtruth, geom)
+def get_truth_data_fast(truths_dict: dict, geom: Geometry, event: int) -> np.ndarray:
+  s = EdepSimDeposits(truths_dict[event], geom)
   s.voxelize()
   return s.voxels.voxels
 
 if __name__ == "__main__":
 
-  edepFile_new = "/home/filippo/DUNE/data/numu-CC-QE/skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
-  edepFile_old = "/home/filippo/DUNE/data/numu-CC-QE/OLD_skimmed-events-in-GRAIN_LAr_merged_reindex.edep-sim.root"
+  edepFile = "/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-EDEPSIM-PROD/new-numu-CC-QE-in-GRAIN/grain_numu_ccqe/merged-skimmed-sand-events.edep.root" 
   defs = {}
   defs['voxel_size'] = 150
-  geometryPath = "/home/filippo/DUNE/GEOMETRIES/GRAIN_official"        #path to GRAIN geometry
+  geometryPath = "/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-GDML/MASK/GRAIN_box31_3cm_random_2row"        #path to GRAIN geometry
   geom = load_geometry(geometryPath, defs)
 
-  response_base_path = Path('/home/filippo/DUNE/data/numu-CC-QE/detector_response')
-  drdf_files = [f.name for f in response_base_path.glob('*.drdf') if f.is_file()]
+  response_base_path = Path('/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-EDEPSIM-PROD/new-numu-CC-QE-in-GRAIN/grain_numu_ccqe/detresponse/')
+  drdf_files = [str(f) for f in response_base_path.rglob('*.drdf') if f.is_file()]
+  print("Using", len(drdf_files), "files")
 
   ROOT.gErrorIgnoreLevel = ROOT.kWarning
 
+  counter = 0
   events = []
   truths = []
+  truths_dict = loadPrimariesEdepSimAll(edepFile)
   for file in drdf_files:
+    print("File n", counter)
+    counter += 1
+
     reader = drdf.DRDF()
-    reader.read(response_base_path / file)
+    reader.read(file)
     for run in reader.runs:
       for event in reader.runs[run]:
-        if event<1800:
-          truth = get_truth_data(edepFile_old, geom, event)
-        else:
-          truth = get_truth_data(edepFile_new, geom, event)
         cameras = get_response_data(reader.runs[run][event])
+        truth = get_truth_data_fast(truths_dict, geom, event)
         events.append(cameras)
         truths.append(truth)
   
   events_data = np.stack(events, axis=0)
   truths_data = np.stack(truths, axis=0)
-  print("events:", events_data.shape, events_data.nbytes / 1024 / 1024)
-  print("truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
+  print("MB events:", events_data.shape, events_data.nbytes / 1024 / 1024)
+  print("MB truths:", truths_data.shape, truths_data.nbytes / 1024 / 1024)
 
   # Save to HDF5 file
-  with h5py.File('/home/filippo/DUNE/data/numu-CC-QE/complete_dataset_15cm.h5', 'w') as f:
+  with h5py.File('/storage/gpfs_data/neutrino/SAND-LAr/SAND-LAr-EDEPSIM-PROD/new-numu-CC-QE-in-GRAIN/grain_numu_ccqe/pre-volumereco-data/dataset_15cm.h5', 'w') as f:
     f.create_dataset('inputs', data=events_data, compression='gzip')
     f.create_dataset('targets', data=truths_data, compression='gzip')
