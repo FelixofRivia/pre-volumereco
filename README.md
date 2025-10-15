@@ -26,13 +26,14 @@ The goal of this project is to provide a prior of the expected three-dimensional
 ### Dataset and predicitons
 The event features are the average hit times in each one of camera, the event thruths are the voxelized energy deposits. Currently, given the limited available dataset it is necessary to consider large 20x20x20 $$\text{cm}^{3}$$ voxels.
 
-![features_vs_truth](https://github.com/user-attachments/assets/2fa61bd9-5ee0-4e89-98a9-177e9cc3a877)
-![prediction_vs_truth](https://github.com/user-attachments/assets/4cd3df5a-d8e4-4520-87a7-b08d587b6793)
-
+![features_vs_truth](https://github.com/user-attachments/assets/0c02b59d-2916-4dfc-991f-1e89e08fffa3)
+<p align="center">
+  <img width="768" height="344" alt="pred_vs_reco" src="https://github.com/user-attachments/assets/77f271ee-c234-401a-a9a1-574e1d5c382f" />
+</p>
 
 ### Model evaluation
-Compare reconstructions starting from a uniform voxel score distribution with reconstructions using a prior predicted by the model. Given a set number of iterations of the reconstruction algorithm, count how many iterations are necessary to reach the 99% maximum likelihood (which should converge iteration after iteration). The expectation is that starting from the prior predicted by the model lowers the number of iterations required.
+The trained model was evaluated on 600 events as a prior for MLEM reconstruction, showing that likelihood convergence is reached approximately 20 iterations earlier compared to a uniform prior. Convergence is defined as a log likelihood change <50 between iterations.
 
 <p align="center">
-  <img width="45%" height="45%" alt="likelihood" src="https://github.com/user-attachments/assets/da34aca9-52e9-4e90-b79a-9282ec36ae1f" />
+  <img width="829" height="295" alt="likelihood" src="https://github.com/user-attachments/assets/f37c73c3-450f-42e7-8f6e-a411223872fd" />
 </p>
