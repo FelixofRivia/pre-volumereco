@@ -1,3 +1,18 @@
+import os
+import argparse
+
+# Temporary parser to handle CPU mode early
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("--cpu_only", action="store_true")
+args_partial, _ = parser.parse_known_args()
+
+# Force CPU-only mode if requested
+if args_partial.cpu_only:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    print("Running in CPU-only mode")
+    num_cores = os.cpu_count()
+    print(f"Detected {num_cores} CPU cores available")
+
 import h5py
 import numpy as np
 import tensorflow as tf 
@@ -6,8 +21,6 @@ import optuna
 from optuna.integration import TFKerasPruningCallback
 from sklearn.model_selection import train_test_split
 import json
-import os
-import argparse
 
 def normalize_events(events):
     events_max = events.max(axis=1, keepdims=True)  # max per event
@@ -30,8 +43,8 @@ def objective(trial):
     optimizer_name = trial.suggest_categorical("optimizer", ["adam", "sgd", "rmsprop"])
     learning_rate = trial.suggest_float("learning_rate", 1e-4, 1e-2, log=True)
     dropout_rate = trial.suggest_float("dropout_rate", 0.1, 0.3)
-    batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128])
-    num_layers = trial.suggest_int("num_layers", 1, 4)
+    batch_size = trial.suggest_categorical("batch_size", [32, 64, 128, 256])
+    num_layers = trial.suggest_int("num_layers", 2, 5)
 
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Input(shape=(input_dim,)))
@@ -58,7 +71,7 @@ def objective(trial):
     history = model.fit(
         X_train, y_train,
         validation_data=(X_val, y_val),
-        epochs=50,
+        epochs=100,
         batch_size=batch_size,
         verbose=0,
         callbacks=[TFKerasPruningCallback(trial, "val_loss")]
@@ -80,6 +93,8 @@ if __name__ == "__main__":
     parser.add_argument("input_file", type=str, help="Dataset (.h5)")
     parser.add_argument("--output_dir", type=str, help="Output directory")
     parser.add_argument("--model_name", type=str, default="model", help="Model name")
+    parser.add_argument("--n_trials", type=int, default=100, help="Number of trials for OPTUNA")
+    parser.add_argument("--cpu_only", action="store_true", help="Force CPU-only training (disable GPU)")
     args = parser.parse_args()
 
     with h5py.File(args.input_file, 'r') as f:
@@ -89,7 +104,9 @@ if __name__ == "__main__":
     X = normalize_events(events)
     y = normalize_truths(truths)
 
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, random_state=42)
+    # Split 70 / 15 / 15    training / validation / testing
+    X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=42)
 
     input_dim = len(X[0])
     output_shape = y[0].shape
@@ -102,7 +119,7 @@ if __name__ == "__main__":
 
     # Run OPTUNA study
     study = optuna.create_study(direction="minimize")
-    study.optimize(objective, n_trials=3)
+    study.optimize(objective, n_trials=args.n_trials)
 
     # Best trial
     print("Best trial:")
@@ -111,6 +128,17 @@ if __name__ == "__main__":
     print("  Params:")
     for key, value in trial.params.items():
         print(f"    {key}: {value}")
+
+    # === FINAL EVALUATION ===
+    val_loss, val_mae = best_model.evaluate(X_val, y_val, verbose=0)
+    test_loss, test_mae = best_model.evaluate(X_test, y_test, verbose=0)
+
+    metrics = {
+        "val_loss": float(val_loss),
+        "val_mae": float(val_mae),
+        "test_loss": float(test_loss),
+        "test_mae": float(test_mae),
+    }
 
     # === SAVE BEST MODEL, HISTORY, PARAMS ===
     os.makedirs(args.output_dir, exist_ok=True)
@@ -125,5 +153,9 @@ if __name__ == "__main__":
     # Save best parameters
     with open(os.path.join(args.output_dir, f"{args.model_name}_params.json"), "w") as f:
         json.dump(trial.params, f, indent=4)
+
+    # Save metrics
+    with open(os.path.join(args.output_dir, f"{args.model_name}_metrics.json"), "w") as f:
+        json.dump(metrics, f, indent=4)
 
     print(f"\nBest model, history, and parameters saved in {args.output_dir}/")
