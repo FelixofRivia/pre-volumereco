@@ -1,0 +1,8 @@
+executable              = launch_process_data.sh                                    
+transfer_input_files    = /home/NEUTRINO/fmei/EDepSim-tools/source_libs_neutrino01.sh, /home/NEUTRINO/fmei/pre-volumereco/prepare_input_data.py, /home/NEUTRINO/fmei/EDepSim-tools/edep_tree.py
+log                     = logs/$(ClusterId).$(Process).$(Item).log
+output                  = logs/$(ClusterId).$(Process).$(Item).out
+error                   = logs/$(ClusterId).$(Process).$(Item).err
+should_transfer_files   = Yes
+when_to_transfer_output = ON_EXIT
+queue 1
